@@ -4,6 +4,7 @@ from tkinter import scrolledtext
 import numpy as np
 import matplotlib.pyplot as plt
 from playsound import playsound
+import re
 
 
 root=Tk()
@@ -11,7 +12,7 @@ root.title("Student Management System")
 root.geometry("700x700+500+50")
 
 root.resizable(False,False)
-
+regex = re.compile('[@_!#$%^&*()<>?/\|}{~:]')
 #Quote of the Day
 
 import bs4
@@ -96,7 +97,10 @@ def f1():
 			messagebox.showerror("error","Enter charachters only for name!")
 			entName.delete(0,END)
 			entName.focus()
-
+		elif  (regex.search(name) != None):
+			messagebox.showerror("error","No special allowed!")
+			entName.delete(0,END)
+			entName.focus()
 		else:
 			cursor=con.cursor()
 			sql="insert into student values('%d','%s','%d')"
@@ -150,43 +154,33 @@ def delete():
 	import cx_Oracle
 	con=None
 	cursor=None
-	try:	
+	try:
 		con=cx_Oracle.connect('system/abc123')
+		cursor=con.cursor()
+		r=entDRno.get()
+		rno=int(r)
+		cursor=con.cursor()	
+		sql="select * from student where rno='%d'"
+		cursor.execute(sql)
 		try:
-			r=entDRno.get()
-			rno=int(r)
-		except ValueError:
-			messagebox.showerror("error","Enter Integers Only for Rno!")
-			entDRno.delete(0,END)
-			entDRno.focus()
-		if rno<0:
-			messagebox.showerror("error","Roll no cannot be negative!")
-			entDRno.delete(0,END)
-			entDRno.focus()
-		else:
-			cursor=con.cursor()
-			sql="delete from student where rno = (select rno from student where rno='%d')"
+			sql="DELETE FROM student WHERE rno='%d'"
 			args=(rno)
 			cursor.execute(sql % args)
 			con.commit()
-			x = (cursor.rowcount)
-			if (x==0):
-				raise NameError        
-			else:
-				m=str(x) +" record deleted"
-				messagebox.showinfo("status",m)
-				entDRno.delete(0,END)
-				entDRno.focus()
-	except NameError as ie:
-		messagebox.showerror("error","User doen't exist")
-		entDRno.delete(0,END)
-		entDRno.focus()
-		con.rollback()
+			m=str(cursor.rowcount)+" record deleted"
+			messagebox.showerror("error",m)
+			entDRno.delete(0,END)
+			entDRno.focus()
+
+		except ValueError:
+			messagebox.showerror("Error","Enter Integers Only! Check Roll no")
+			entDRno.delete(0,END)
+			entDRno.focus()
+		
 	except cx_Oracle.DatabaseError as e:
-		messagebox.showerror("error",e)
+		messagebox.showerror("Error",e)
 		entDRno.delete(0,END)
 		entDRno.focus()
-		con.rollback()
 	finally:
 		if cursor is not None:
 			cursor.close()
@@ -201,7 +195,9 @@ def update():
 		con=cx_Oracle.connect('system/abc123')
 		r=entURno.get()
 		rno=int(r)
-		
+		cursor=con.cursor()
+		sql="select * from student where rno=rno "  
+		cursor.execute(sql)
 		name=entUName.get()
 		try:
 			marks=int(entUMarks.get())
@@ -234,30 +230,24 @@ def update():
 			messagebox.showerror("error","Enter charachters only for name!")
 			entUName.delete(0,END)
 			entUName.focus()
-
+		elif (regex.search(name) != None):
+			messagebox.showerror("error","No special allowed!")
+			entUName.delete(0,END)
+			entUName.focus()
 		else:	
 			cursor=con.cursor()
-			sql="update student set name='%s',marks='%d' where rno=(select rno from student where rno='%d') "  
+			sql="update student set name='%s',marks='%d' where rno='%d' "  
 			args=(name,marks,rno)
 			cursor.execute(sql % args)
 			con.commit()
-			x = (cursor.rowcount)
-			if (x == 0):
-				raise NameError
-			else:
-				msg="record updated"
-				messagebox.showinfo("status",msg)
-				clapp="clapp.mp3"
-				playsound(clapp)
-				entURno.delete(0,END)
-				entUName.delete(0,END)
-				entUMarks.delete(0,END)
-				entURno.focus()
-	except NameError as ie:
-		messagebox.showerror("error","Record doesn't exists")
-		entURno.delete(0,END)
-		entURno.focus()
-		con.rollback()
+			msg="record updated"
+			messagebox.showinfo("status",msg)
+			clapp="clapp.mp3"
+			playsound(clapp)
+			entURno.delete(0,END)
+			entUName.delete(0,END)
+			entUMarks.delete(0,END)
+			entURno.focus()
 	except cx_Oracle.DatabaseError as e:
 		messagebox.showerror("error",e)
 		entURno.delete(0,END)
