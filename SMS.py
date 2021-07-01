@@ -115,6 +115,8 @@ def f1():
 			entName.delete(0,END)
 			entMarks.delete(0,END)
 			entRno.focus()
+	except UnboundLocalError as ule:
+		pass
 	except cx_Oracle.DatabaseError as e:
 		messagebox.showerror("Error","Check Roll number again! \n user already exists")
 		entRno.delete(0,END)
@@ -143,7 +145,8 @@ def viewSt():
 			msg=msg+"Roll No: "+str(d[0])+"	"+"Name: "+d[1]+"	"+"Marks: "+str(d[2])+"\n"
 		stData.insert(INSERT,msg)
 	except cx_Oracle.DatabaseError as e:
-		print("Error",e)
+		message.showerror("Error",e)
+		con.rollback()
 	finally:
 		if cursor is not None:
 			cursor.close()
@@ -158,29 +161,35 @@ def delete():
 		con=cx_Oracle.connect('system/abc123')
 		cursor=con.cursor()
 		r=entDRno.get()
-		rno=int(r)
-		cursor=con.cursor()	
-		sql="select * from student where rno='%d'"
-		cursor.execute(sql)
-		try:
-			sql="DELETE FROM student WHERE rno='%d'"
-			args=(rno)
-			cursor.execute(sql % args)
-			con.commit()
-			m=str(cursor.rowcount)+" record deleted"
-			messagebox.showerror("error",m)
-			entDRno.delete(0,END)
-			entDRno.focus()
-
-		except ValueError:
-			messagebox.showerror("Error","Enter Integers Only! Check Roll no")
-			entDRno.delete(0,END)
-			entDRno.focus()
-		
+		rno=int(r)	
+		sql="select count(*) from student where rno='%d'"
+		args =(rno)
+		cursor.execute(sql % args)
+		data=cursor.fetchone()
+		print(data[0])
+		if (data[0] == 0):
+			raise AttributeError
+		else:
+			try:
+				sql="DELETE FROM student WHERE rno='%d'"
+				args=(rno)
+				cursor.execute(sql % args)
+				con.commit()
+				m=str(cursor.rowcount)+" record deleted"
+				messagebox.showinfo("status",m)
+				entDRno.delete(0,END)
+				entDRno.focus()
+			except ValueError:
+				messagebox.showerror("Error","Enter Integers Only! Check Roll no")
+				entDRno.delete(0,END)
+				entDRno.focus()
+	except AttributeError as ae:
+		messagebox.showerror("Error","Record doesn't exist")
+		entDRno.delete(0,END)
+		entDRno.focus()	
 	except cx_Oracle.DatabaseError as e:
 		messagebox.showerror("Error",e)
-		entDRno.delete(0,END)
-		entDRno.focus()
+		con.rollback()
 	finally:
 		if cursor is not None:
 			cursor.close()
@@ -195,16 +204,21 @@ def update():
 		con=cx_Oracle.connect('system/abc123')
 		r=entURno.get()
 		rno=int(r)
-		cursor=con.cursor()
-		sql="select * from student where rno=rno "  
-		cursor.execute(sql)
-		name=entUName.get()
-		try:
-			marks=int(entUMarks.get())
-		except ValueError:
-			messagebox.showerror("error","Enter Integers Only! Check Marks")
-			entUMarks.delete(0,END)
-			entUMarks.focus()
+		cursor=con.cursor()	
+		sql="select count(*) from student where rno='%d'"
+		args = (rno)
+		cursor.execute(sql % args)
+		data = cursor.fetchone()
+		if (data[0]==0):
+			raise AttributeError
+		else:	
+			name=entUName.get()
+			try:
+				marks=int(entUMarks.get())
+			except ValueError:
+				messagebox.showerror("error","Enter Integers Only! Check Marks")
+				entUMarks.delete(0,END)
+				entUMarks.focus()
 		if rno<0:
 			messagebox.showerror("error","Negative Roll numbers not allowed")
 			entURno.delete(0,END)
@@ -240,14 +254,23 @@ def update():
 			args=(name,marks,rno)
 			cursor.execute(sql % args)
 			con.commit()
-			msg="record updated"
+			msg=str(cursor.rowcount) + " record updated"
 			messagebox.showinfo("status",msg)
 			clapp="clapp.mp3"
 			playsound(clapp)
 			entURno.delete(0,END)
 			entUName.delete(0,END)
 			entUMarks.delete(0,END)
-			entURno.focus()
+	except ValueError as ve:
+		messagebox.showerror("Error","Only integers allowed")
+		entURno.delete(0,END)
+		entURno.focus()
+	except AttributeError as ae:
+		messagebox.showerror("error","Record doesn't exist")
+		entURno.delete(0,END)
+		entURno.focus()
+	except UnboundLocalError as ule:
+		pass 
 	except cx_Oracle.DatabaseError as e:
 		messagebox.showerror("error",e)
 		entURno.delete(0,END)
@@ -258,13 +281,6 @@ def update():
 			cursor.close()
 		if con is not None:
 			con.close()
-
-
-
-
-
-
-		
 
 def back_r():
 	addst.withdraw()
