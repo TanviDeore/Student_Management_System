@@ -30,13 +30,15 @@ A simple student management system built using Python's Tkinter library for the 
    pip install cx_Oracle requests matplotlib playsound
 
 2. Set up an Oracle database with a table to store student data. The student table should have the following schema:
+   ```sql
    CREATE TABLE student (
-  rno INT PRIMARY KEY,
-  name VARCHAR2(100),
-  marks INT
-  );
+   rno INT PRIMARY KEY,
+   name VARCHAR2(100),
+   marks INT
+   );
 
-3. Update the Oracle database connection credentials in the code. The connection string in the code is:
+4. Update the Oracle database connection credentials in the code. The connection string in the code is:
+   ```python
    con = cx_Oracle.connect('system/abc123')  # Modify with your database credentials
 
 ## How to Use
