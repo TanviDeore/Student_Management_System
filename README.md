@@ -47,10 +47,10 @@ A simple student management system built using Python's Tkinter library for the 
 
 The main GUI window will open with the following options:
 
-   Add: Add a new student record.
-   View: View all student records.
-   Update: Update an existing student record.
-   Delete: Delete a student record.
-   Graph: View a bar graph of student marks.
+    Add: Add a new student record.
+    View: View all student records.
+    Update: Update an existing student record.
+    Delete: Delete a student record.
+    Graph: View a bar graph of student marks.
 
 The application also displays the quote of the day and the current temperature of Mumbai.
